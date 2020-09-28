@@ -88,14 +88,16 @@ type LoggerConfig struct {
 
 func Logger() gin.HandlerFunc {
 	return LoggerWithConfig(LoggerConfig{
-		Logger:    logrus.New(),
-		Formatter: defaultTransformer,
-		Option:    OptionalFieldsParams{},
+		Logger: logrus.New(),
+		Option: OptionalFieldsParams{},
 	})
 }
 func LoggerWithConfig(config LoggerConfig) gin.HandlerFunc {
 	logger := config.Logger
-	formatter := config.Formatter
+	transformer := config.Formatter
+	if transformer == nil {
+		transformer = defaultTransformer
+	}
 	var skip map[string]struct{}
 	if length := len(config.SkipPaths); length > 0 {
 		skip = make(map[string]struct{}, length)
@@ -133,7 +135,7 @@ func LoggerWithConfig(config LoggerConfig) gin.HandlerFunc {
 				path = path + "?" + raw
 			}
 			param.Path = path
-			formatter(logger, param)
+			transformer(logger, param)
 		}
 	}
 }
